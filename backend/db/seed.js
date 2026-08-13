@@ -2,10 +2,8 @@ import pool from "./postgres.js";
 import { recipes } from "../data/recipes.js";
 
 async function seed() {
-  await pool.query("DROP TABLE IF EXISTS recipes");
-
   await pool.query(`
-    CREATE TABLE recipes (
+    CREATE TABLE IF NOT EXISTS recipes (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       category TEXT NOT NULL,
@@ -24,7 +22,8 @@ async function seed() {
     await pool.query(
       `INSERT INTO recipes
         (id, name, category, time, servings, calories, protein, fat, carbs, ingredients, instructions)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       ON CONFLICT (id) DO NOTHING`,
       [
         r.id,
         r.name,
