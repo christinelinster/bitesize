@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { RECIPE_ACCENT, RECIPE_ICON } from '../data/categories'
 import FavButton from './FavButton'
 import RecipeIcon from './RecipeIcon'
 
@@ -6,7 +7,7 @@ export default function RecipeCard({ recipe, isFavourite, toggleFavourite }) {
   const fav = isFavourite(recipe.id)
 
   return (
-    <div className="card" style={{ '--accent': recipe.accent }}>
+    <div className="card" style={{ '--accent': RECIPE_ACCENT }}>
       <Link
         to={`/recipe/${recipe.id}`}
         className="card-link"
@@ -14,7 +15,7 @@ export default function RecipeCard({ recipe, isFavourite, toggleFavourite }) {
       >
         <div className="card-media">
           <div className="card-emoji">
-            <RecipeIcon name={recipe.icon} className="dish-icon" />
+            <RecipeIcon name={RECIPE_ICON} className="dish-icon" />
           </div>
           <div className="card-body">
             <div className="card-tags">

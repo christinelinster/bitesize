@@ -1,23 +1,57 @@
 import { useMemo, useState } from 'react'
-import { recipes, categories, maxCalories } from '../data/recipes'
+import { categories } from '../data/categories'
+import useRecipes from '../hooks/useRecipes'
 import Filters from '../components/Filters'
 import RecipeCard from '../components/RecipeCard'
 
 export default function Home({ favouriteIds, isFavourite, toggleFavourite }) {
+  const { recipes, maxCalories, loading, error, retry } = useRecipes()
   const [category, setCategory] = useState(categories[0])
-  const [calorieLimit, setCalorieLimit] = useState(maxCalories)
+  const [calorieLimit, setCalorieLimit] = useState(null)
   const [showFavourites, setShowFavourites] = useState(false)
+
+  const effectiveLimit = calorieLimit ?? maxCalories
 
   const visible = useMemo(
     () =>
-      recipes.filter(
+      (recipes ?? []).filter(
         (r) =>
           (category === 'All' || r.category === category) &&
-          r.calories <= calorieLimit &&
+          r.calories <= effectiveLimit &&
           (!showFavourites || favouriteIds.includes(r.id)),
       ),
-    [category, calorieLimit, showFavourites, favouriteIds],
+    [recipes, category, effectiveLimit, showFavourites, favouriteIds],
   )
+
+  if (loading && !recipes) {
+    return (
+      <main className="page">
+        <div className="empty">
+          <span className="empty-emoji" aria-hidden="true">
+            ⏳
+          </span>
+          <p className="empty-title">Loading recipes…</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (error && !recipes) {
+    return (
+      <main className="page">
+        <div className="empty">
+          <span className="empty-emoji" aria-hidden="true">
+            ⚠️
+          </span>
+          <p className="empty-title">Couldn't load recipes</p>
+          <p className="empty-sub">{error}</p>
+          <button type="button" className="btn" onClick={retry}>
+            Try again
+          </button>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="page">
@@ -34,8 +68,9 @@ export default function Home({ favouriteIds, isFavourite, toggleFavourite }) {
       <Filters
         category={category}
         setCategory={setCategory}
-        calorieLimit={calorieLimit}
+        calorieLimit={effectiveLimit}
         setCalorieLimit={setCalorieLimit}
+        maxCalories={maxCalories}
         showFavourites={showFavourites}
         setShowFavourites={setShowFavourites}
         favouriteCount={favouriteIds.length}

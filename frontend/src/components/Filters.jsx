@@ -1,10 +1,11 @@
-import { categories, maxCalories } from '../data/recipes'
+import { categories } from '../data/categories'
 
 export default function Filters({
   category,
   setCategory,
   calorieLimit,
   setCalorieLimit,
+  maxCalories,
   showFavourites,
   setShowFavourites,
   favouriteCount,
