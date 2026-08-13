@@ -1,7 +1,6 @@
 import "dotenv/config";
 import express from "express";
 import pool from "./db/postgres.js";
-import { connectMongo } from "./db/mongodb.js";
 
 import recipesRouter from './routes/recipes.js'
 
@@ -20,8 +19,6 @@ app.get("/api/health", async (req, res) => {
 async function startServer() {
   await pool.query("SELECT 1");
   console.log("Connected to PostgreSQL");
-
-  await connectMongo();
 
   app.listen(PORT, () => {
     console.log(`Bitesize backend listening on port ${PORT}`);
