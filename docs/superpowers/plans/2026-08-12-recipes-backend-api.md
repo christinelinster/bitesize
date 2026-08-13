@@ -470,7 +470,7 @@ Seeded 12 recipes
 
 ```bash
 npm run seed
-node -e "import('./db/postgres.js').then(async pool => { const res = await pool.query('SELECT count(*) FROM recipes'); console.log('rows:', res.rows[0].count); await pool.end(); })"
+node -e "import('./db/postgres.js').then(m => { const pool = m.default; return pool.query('SELECT count(*) FROM recipes').then(r => { console.log('rows:', r.rows[0].count); return pool.end(); }); })"
 ```
 
 Expected output: `rows:` followed by `12` on the second run (running seed twice must not duplicate rows).
@@ -484,29 +484,78 @@ git commit -m "feat: add idempotent recipe seed script"
 
 ---
 
-### Task 3: Formalize the `/api/recipes` route and fix its ESM import
+### Task 3: Create the `/api/recipes` route and wire it into the server
+
+Note: this plan runs in an isolated worktree carved from the last commit, so the
+`/api/recipes` route and its server wiring do not exist yet — they are created here
+in full (the backend `server.js` currently only mounts `/api/health`).
 
 **Files:**
-- Modify: `backend/routes/recipes.js:2` (fix extensionless import)
-- (These files already exist as uncommitted working-tree changes and belong to this feature: `backend/server.js`, `backend/routes/recipes.js`)
+- Create: `backend/routes/recipes.js`
+- Modify: `backend/server.js` (import router, mount at `/api/recipes`)
 
-- [ ] **Step 1: Fix the extensionless import in `backend/routes/recipes.js`**
-
-Line 2 currently reads:
+- [ ] **Step 1: Create `backend/routes/recipes.js`**
 
 ```js
-import pool from '../db/postgres'
-```
-
-Change it to:
-
-```js
+import express from 'express'
 import pool from '../db/postgres.js'
+
+const router = express.Router()
+
+router.get('/', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM recipes')
+    res.json(result.rows)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+export default router;
 ```
 
-- [ ] **Step 2: Start the backend and confirm the route returns seeded data**
+- [ ] **Step 2: Wire the router into `backend/server.js`**
 
-From `backend/`:
+Add the import after the existing mongo import and mount the router before the health check. The file should read:
+
+```js
+import "dotenv/config";
+import express from "express";
+import pool from "./db/postgres.js";
+import { connectMongo } from "./db/mongodb.js";
+
+import recipesRouter from './routes/recipes.js'
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(express.json());
+app.use('/api/recipes', recipesRouter)
+
+app.get("/api/health", async (req, res) => {
+  res.json({
+    status: "ok",
+  });
+});
+
+async function startServer() {
+  await pool.query("SELECT 1");
+  console.log("Connected to PostgreSQL");
+
+  await connectMongo();
+
+  app.listen(PORT, () => {
+    console.log(`Bitesize backend listening on port ${PORT}`);
+  });
+}
+
+startServer();
+```
+
+- [ ] **Step 3: Start the backend and confirm the route returns seeded data**
+
+(Requires Tasks 1–2 to be complete so the `recipes` table exists.)
 
 ```bash
 npm run dev
@@ -522,7 +571,7 @@ Expected: a JSON array of 12 recipe objects with fields `id, name, category, tim
 
 Stop the backend server (Ctrl+C) when done.
 
-- [ ] **Step 3: Commit the route and server wiring**
+- [ ] **Step 4: Commit the route and server wiring**
 
 ```bash
 git add backend/server.js backend/routes/recipes.js
