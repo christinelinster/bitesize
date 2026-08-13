@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { recipes } from '../data/recipes'
+import useRecipes from '../hooks/useRecipes'
+import { RECIPE_ACCENT, RECIPE_ICON } from '../data/categories'
 import { matchedIngredientIndexes, stepSegments } from '../utils/ingredients'
 import FavButton from '../components/FavButton'
 import RecipeIcon from '../components/RecipeIcon'
 
 export default function RecipeDetail({ isFavourite, toggleFavourite }) {
   const { id } = useParams()
-  const recipe = recipes.find((r) => r.id === id)
+  const { recipes, loading, error, retry } = useRecipes()
+  const recipe = (recipes ?? []).find((r) => r.id === id)
   const [hoveredStep, setHoveredStep] = useState(null)
 
   const stepMatches = useMemo(
@@ -17,6 +19,36 @@ export default function RecipeDetail({ isFavourite, toggleFavourite }) {
         : [],
     [recipe],
   )
+
+  if (loading && !recipes) {
+    return (
+      <main className="page">
+        <div className="empty">
+          <span className="empty-emoji" aria-hidden="true">
+            ⏳
+          </span>
+          <p className="empty-title">Loading recipe…</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (error && !recipes) {
+    return (
+      <main className="page">
+        <div className="empty">
+          <span className="empty-emoji" aria-hidden="true">
+            ⚠️
+          </span>
+          <p className="empty-title">Couldn't load recipes</p>
+          <p className="empty-sub">{error}</p>
+          <button type="button" className="btn" onClick={retry}>
+            Try again
+          </button>
+        </div>
+      </main>
+    )
+  }
 
   if (!recipe) {
     return (
@@ -38,10 +70,10 @@ export default function RecipeDetail({ isFavourite, toggleFavourite }) {
     <main className="page">
       <Link to="/" className="back-link">← All Recipes</Link>
 
-      <article className="detail" style={{ '--accent': recipe.accent }}>
+      <article className="detail" style={{ '--accent': RECIPE_ACCENT }}>
         <div className="detail-hero">
           <div className="detail-emoji" aria-hidden="true">
-            <RecipeIcon name={recipe.icon} className="dish-icon" />
+            <RecipeIcon name={RECIPE_ICON} className="dish-icon" />
           </div>
           <div className="detail-head">
             <div className="detail-head-top">
