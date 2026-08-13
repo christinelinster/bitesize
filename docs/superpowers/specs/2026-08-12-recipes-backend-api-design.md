@@ -23,12 +23,12 @@ No shared code between the two.
 
 ### Database
 
-Postgres `recipes` table with the columns below. `id` is a text primary key so
-existing slugs (`sunday-pancakes`, etc.) keep URLs like `/recipe/sunday-pancakes` working.
+Postgres `recipes` table with the columns below. `id` is a `SERIAL` (integer
+auto-increment) primary key; `/recipe/:id` URLs use the numeric id rather than a slug.
 
-| column        | type          | notes                          |
-| ------------- | ------------- | ------------------------------ |
-| `id`          | text PK       | slug, e.g. `sunday-pancakes`   |
+| column        | type            | notes                          |
+| ------------- | --------------- | ------------------------------ |
+| `id`          | SERIAL PK       | integer, auto-increment        |
 | `name`        | text          |                                |
 | `category`    | text          | one of the frontend categories |
 | `time`        | integer       | minutes                        |
