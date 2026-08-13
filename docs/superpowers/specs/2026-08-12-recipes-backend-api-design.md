@@ -23,12 +23,12 @@ No shared code between the two.
 
 ### Database
 
-Postgres `recipes` table with the columns below. `id` is a `SERIAL` (integer
-auto-increment) primary key; `/recipe/:id` URLs use the numeric id rather than a slug.
+Postgres `recipes` table with the columns below. `id` is a text primary key (a
+slug such as `sunday-pancakes`), so URLs like `/recipe/sunday-pancakes` stay stable.
 
-| column        | type            | notes                          |
-| ------------- | --------------- | ------------------------------ |
-| `id`          | SERIAL PK       | integer, auto-increment        |
+| column        | type          | notes                          |
+| ------------- | ------------- | ------------------------------ |
+| `id`          | text PK       | slug, e.g. `sunday-pancakes`   |
 | `name`        | text          |                                |
 | `category`    | text          | one of the frontend categories |
 | `time`        | integer       | minutes                        |
@@ -78,8 +78,10 @@ Responses are plain data only — no categories list, no maxCalories, no icons/a
 ### Icons and accent
 
 `icon` and `accent` are no longer per-recipe. Every recipe uses a single constant:
-one shared icon name (e.g. `bowl`) and one shared accent color. The `RecipeIcon`
-component and all recipe styling logic stay exactly where they are in the frontend.
+one shared icon name (e.g. `bowl`) and one shared accent color. `RecipeCard` and
+`RecipeDetail` use this shared constant instead of `recipe.icon` / `recipe.accent`.
+The `RecipeIcon` component and all recipe styling logic stay exactly where they are
+in the frontend.
 
 ### Data fetching
 
@@ -98,8 +100,8 @@ New `RecipesProvider` + `useRecipes` hook in `frontend/src/hooks/useRecipes.js`:
   `data/recipes.js`.
 - `Filters` renders the fixed category chips and the calorie slider with the derived
   `maxCalories`.
-- `RecipeDetail` looks up its recipe by `id` from the fetched list and renders existing
-  loading / not-found / error states.
+- `RecipeDetail` looks up its recipe by `id` from the fetched list and renders new
+  loading / not-found / error states (data is now async).
 
 ### Dev proxy
 
