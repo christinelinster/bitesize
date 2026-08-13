@@ -624,10 +624,15 @@ git commit -m "feat: add fixed categories and shared recipe style constants"
 
 ### Task 5: Frontend `useRecipes` hook and provider
 
-**Files:**
-- Create: `frontend/src/hooks/useRecipes.js`
+Note: although initially named `useRecipes.js`, the file contains JSX (the provider's
+return statement), so it is created as `useRecipes.jsx` to match the repo convention
+and satisfy Vite's build — imports are extensionless and unaffected. Task 6's commit
+performs the rename.
 
-- [ ] **Step 1: Create `frontend/src/hooks/useRecipes.js`**
+**Files:**
+- Create: `frontend/src/hooks/useRecipes.jsx`
+
+- [ ] **Step 1: Create `frontend/src/hooks/useRecipes.jsx`**
 
 Fetch once, cache at module scope (so Home ↔ Detail navigation never refetches), de-dupe concurrent fetches (StrictMode double-effect safe), and expose `recipes`, `maxCalories`, `loading`, `error`, `retry`.
 
@@ -721,7 +726,7 @@ Expected: exit 0. A `react/only-export-components` *warning* for exporting both 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add frontend/src/hooks/useRecipes.js
+git add frontend/src/hooks/useRecipes.jsx
 git commit -m "feat: add useRecipes hook and provider with module cache"
 ```
 
